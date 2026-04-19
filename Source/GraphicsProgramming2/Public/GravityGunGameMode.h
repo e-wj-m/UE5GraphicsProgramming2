@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "GravityGunGameMode.generated.h"
 
+class GEngine;
+
 /**
  * 
  */

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Logging/StructuredLog.h"
 #include "GravityGunGameMode.h"
+#include "Logging/StructuredLog.h"
 
 void AGravityGunGameMode::StartPlay()
 {
@@ -39,10 +39,10 @@ void AGravityGunGameMode::StartPlay()
 	//UE_LOG(LogTemp, Warning, TEXT("TestNumberPtr: %i"), TestCrash);
 
 	// 6. Printing a String
-	FString TestString = TEXT("Hello, Unreal!");
-	UE_LOG(LogTemp, Warning, TEXT("TestString: %s"), *TestString);
+	//FString TestString = TEXT("Hello, Unreal!");
+	//UE_LOG(LogTemp, Warning, TEXT("TestString: %s"), *TestString);
 
-	// 7. Modern Unreal way of logging without specifiers
-	UE_LOGFMT(LogTemp, Warning, "TestNumber: {0}, TestBool: {1}, TestString: {2}", TestNumber, TestBool, *TestString, "This is my String ya gabbagool");
+	//// 7. Modern Unreal way of logging without specifiers
+	//UE_LOGFMT(LogTemp, Warning, "TestNumber: {0}, TestBool: {1}, TestString: {2}", TestNumber, TestBool, *TestString, "This is my String ya gabbagool");
 
 }

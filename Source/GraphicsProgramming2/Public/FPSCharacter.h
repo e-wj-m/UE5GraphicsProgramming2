@@ -49,11 +49,26 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* FireAction;
 
+	// GRAVITY GUN - Action for Throwing Objects after the Fire input has finished. This is separate from the FireAction because we want the player to be able to hold the Fire button to keep an object attached to the GrabbedObjectLocation, and then throw it when they release the button. 
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	UInputAction* EndFireAction;
+
+	// GRAVITY GUN - Attaching fired objects to a point in front of the Player.
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	class USceneComponent* GrabbedObjectLocation;
+
+	// GRAVITY GUN - Keeping track of the currently grabbed object, if there is one. This will be set to nullptr when there is no object currently grabbed, ensuring we manage our memory proper.
+	UPROPERTY()
+	UPrimitiveComponent* GrabbedObject;
+
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* FPSCameraComponent;
 
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* FPSMeshComponent;
+
+	UPROPERTY(VisibleAnywhere)
+	USkeletalMeshComponent* FP_Gun;
 
 	UPROPERTY(EditAnywhere)
 	FVector MuzzleOffset;
@@ -83,4 +98,13 @@ public:
 	UFUNCTION()
 
 	void Fire();
+
+	UFUNCTION()
+
+	void EndFire();
+
+	UFUNCTION()
+
+	void SetGrabbedObject(UPrimitiveComponent* ObjectToGrab);
+
 };

@@ -29,9 +29,20 @@ AFPSCharacter::AFPSCharacter()
 		FPSMeshComponent->CastShadow = false; // Similar to setting the "Cast Shadows" option of a mesh renderer in Unity, but with more options for how the shadows are cast
 	}
 
+	if (!FP_Gun)
+	{
+		FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
+		FP_Gun->SetupAttachment(FPSCameraComponent); // Similar to setting the parent of a transform in Unity, but with more options for how the attachment works
+		FPSMeshComponent->SetOnlyOwnerSee(true);
+	}
+
 	GetMesh()->SetOwnerNoSee(true); // Similar to setting the "Culling Mask" of a camera in Unity, but with more options for how the visibility is set
 
 	UE_LOG(LogTemp, Warning, TEXT("FPSCharacter Constructor Called"));
+
+	// GRAVITY GUN - This is the component that will be used to attach the grabbed object to the player. It is attached to the gun mesh so that it follows the gun around, and we can easily get its location and rotation to determine where to attach the grabbed object.
+	/*GrabbedObjectLocation = CreateDefaultSubObject<USceneComponent>(TEXT("GrabbedObjectLocation"));
+	GrabbedObjectLocation->SetupAttachment(FP_Gun);*/
 }
 
 // Called when the game starts or when spawned
@@ -73,6 +84,7 @@ void AFPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AFPSCharacter::StartJump);
 			EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &AFPSCharacter::EndJump);
 			EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSCharacter::Fire);
+			EnhancedInputComponent->BindAction(EndFireAction, ETriggerEvent::Completed, this, &AFPSCharacter::EndFire);
 		}
 	}
 }
@@ -116,7 +128,7 @@ void AFPSCharacter::Fire()
 	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
 
 	FRotator MuzzleRotation = CameraRotation;
-	MuzzleRotation.Pitch += 10.0f;
+	// MuzzleRotation.Pitch += 10.0f;
 
 	// Start of spawning the projectile
 
@@ -136,4 +148,78 @@ void AFPSCharacter::Fire()
 
 	FVector LaunchDirection = MuzzleRotation.Vector();
 	Projectile->FireInDirection(LaunchDirection);
+
+	// GRAVITY GUN LOGIC
+	const FCollisionQueryParams QueryParams("Gravity Gun Trace", false, this);
+	const float TraceRange = 5000.0f;
+	const FVector StartTrace = CameraLocation;
+	const FVector EndTrace = (CameraLocation + CameraRotation.Vector() * TraceRange) + StartTrace;
+	FHitResult OnHit;
+
+	if (World->LineTraceSingleByChannel(OnHit, StartTrace, EndTrace, ECC_Visibility, QueryParams))
+	{
+		if (!World) return;
+
+		if (UPrimitiveComponent* Prim = OnHit.GetComponent())
+		{
+			if (Prim->IsSimulatingPhysics())
+			{
+				SetGrabbedObject(Prim);
+			}
+		}
+	}
+
+	// GRAVITY GUN - Try to play a sound when the Gravity Gun is fired.
+	/*if (FireSound != NULL)
+	{
+		UGameplayStatistics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+	}*/
+
+	// GRAVITY GUN - Try to play an Animation for the firing action.
+	//if (FireAnimation != NULL)
+	//{
+	//	// Get the animation object for the arms mesh
+	//	UAnimInstance* AnimInstance = FPSMeshComponent->GetAnimInstance();
+
+	//	if (AnimInstance != NULL)
+	//	{
+	//		AnimInstance->Montage_Play(FireAnimation, 1.f);
+	//	}
+	//}
 }
+
+// GRAVITY GUN - End Fire Function for Throwing Objects after the Fire input for Picking Up Objects has Finished.
+void AFPSCharacter::EndFire()
+{
+	if(GrabbedObject)
+	{
+		if(!GrabbedObject) return;
+		
+		const float ShootForce = 2000.0f;
+		const FVector ShootVelocity = FPSCameraComponent->GetForwardVector() * ShootForce;
+
+		GrabbedObject->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		GrabbedObject->SetSimulatePhysics(true);
+		GrabbedObject->AddImpulse(ShootVelocity, NAME_None, true);
+
+		SetGrabbedObject(nullptr);
+	}
+}
+
+
+// GRAVITY GUN - Function for Attaching fired objects to a point in front of the Player. This is called in the Fire function after we have determined that we have hit an object that can be picked up, and we want to attach it to the GrabbedObjectLocation so that it follows the player around until we release it.
+void AFPSCharacter::SetGrabbedObject(UPrimitiveComponent* ObjectToGrab)
+{
+	GrabbedObject = ObjectToGrab;
+
+	if (GrabbedObject)
+	{
+		if (!GrabbedObject->IsSimulatingPhysics()) return;
+
+		GrabbedObject->SetSimulatePhysics(false);
+		GrabbedObject->AttachToComponent(GrabbedObjectLocation, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	}
+
+}
+
+

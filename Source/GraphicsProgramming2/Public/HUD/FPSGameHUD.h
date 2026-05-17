@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/HUD.h"
+#include "GUI/GameMenuWidget.h"
 #include "Slate/SFPSSettingsWidget.h"
 #include "FPSGameHUD.generated.h"
 
@@ -30,6 +31,14 @@ public:
 	// 2. Slates Method of Creating a User Interface
 	TSharedPtr<class SFPSSettingsWidget> FPSSettingsWidget;
 	TSharedPtr<class SWidget> FPSSettingsWidgetContainer;
+
+	// 3. UMG Method of Creating a User Interface
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UGameMenuWidget> GameMenuWidgetClass;
+	UGameMenuWidget* GameMenuWidgetContainer;
+
+	void SpawnGameMenuWidget();
+
 
 	void ShowSettingsWidget();
 	void HideSettingsWidget();

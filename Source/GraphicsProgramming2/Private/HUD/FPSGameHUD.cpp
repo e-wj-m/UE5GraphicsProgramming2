@@ -12,6 +12,9 @@ void AFPSGameHUD::BeginPlay()
 
 	// 2. Slates Method of creating a User Interface
 	// ShowSettingsWidget();
+
+	// 3. UMG Function to create a User Interface
+	SpawnGameMenuWidget();
 }
 
 void AFPSGameHUD::DrawHUD()
@@ -43,6 +46,21 @@ void AFPSGameHUD::DrawHUD()
 	FCanvasTileItem TileItem(FinalCrosshairPos, CrosshairTexture->GetResource(), FinalCrosshairSize, FLinearColor::White);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 	Canvas->DrawItem(TileItem);
+}
+
+void AFPSGameHUD::SpawnGameMenuWidget()
+{
+	if (GameMenuWidgetContainer)
+	{
+		GameMenuWidgetContainer->RemoveFromParent();
+		GameMenuWidgetContainer = nullptr;
+	}
+
+	GameMenuWidgetContainer = CreateWidget<UGameMenuWidget>(GetWorld(), GameMenuWidgetClass);
+	GameMenuWidgetContainer->AddToViewport();
+
+	PlayerOwner->bShowMouseCursor = false;
+	PlayerOwner->SetInputMode(FInputModeGameOnly());
 }
 
 void AFPSGameHUD::ShowSettingsWidget()

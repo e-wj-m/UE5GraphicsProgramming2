@@ -49,13 +49,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	UInputAction* FireAction;
 
-	// GRAVITY GUN - Action for Throwing Objects after the Fire input has finished. This is separate from the FireAction because we want the player to be able to hold the Fire button to keep an object attached to the GrabbedObjectLocation, and then throw it when they release the button. 
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	UInputAction* EndFireAction;
-
-	// GRAVITY GUN - Attaching fired objects to a point in front of the Player.
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	class USceneComponent* GrabbedObjectLocation;
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun")
+	float GrabDistance = 200.0f;
 
 	// GRAVITY GUN - Keeping track of the currently grabbed object, if there is one. This will be set to nullptr when there is no object currently grabbed, ensuring we manage our memory proper.
 	UPROPERTY()
@@ -75,6 +70,15 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<class AFPSProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun")
+	float GrabStiffness = 15.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun")
+	float ThrowImpulse = 2500.0f;
+
+	UPROPERTY(Editanywhere, Category = "Gravity Gun")
+	float MaxGrabMass = 200.0f;
 
 	UFUNCTION()
 	void Move(const FInputActionValue& Value);
@@ -106,5 +110,13 @@ public:
 	UFUNCTION()
 
 	void SetGrabbedObject(UPrimitiveComponent* ObjectToGrab);
+
+	UFUNCTION()
+	void OnHurtPlayer(float DamageAmount);
+
+private:
+	float Health = 100.0f;
+	float MaxHealth = 100.0f;
+
 
 };

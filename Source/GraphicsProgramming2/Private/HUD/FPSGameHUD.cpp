@@ -2,6 +2,7 @@
 
 
 #include "HUD/FPSGameHUD.h"
+#include "GUI/GameEndWidget.h"
 #include "Widgets/SWeakWidget.h"
 
 void AFPSGameHUD::BeginPlay()
@@ -15,6 +16,55 @@ void AFPSGameHUD::BeginPlay()
 
 	// 3. UMG Function to create a User Interface
 	SpawnGameMenuWidget();
+
+	TimeRemaining = StartingTime;
+
+	GetWorldTimerManager().SetTimer(CountdownTimerHandle, this, &AFPSGameHUD::CountdownTick, 1.0f, true);
+}
+
+void AFPSGameHUD::CountdownTick()
+{
+	TimeRemaining--;
+
+	if (GameMenuWidgetContainer)
+	{
+		GameMenuWidgetContainer->UpdateTimer(TimeRemaining);
+	}
+
+	if (TimeRemaining <= 0)
+	{
+		GetWorldTimerManager().ClearTimer(CountdownTimerHandle);
+
+		ShowGameEndScreen(false);
+	}
+}
+
+void AFPSGameHUD::ShowGameEndScreen(bool bPlayerWon)
+{
+	if (GameMenuWidgetContainer)
+	{
+		GameMenuWidgetContainer->RemoveFromParent();
+		GameMenuWidgetContainer = nullptr;
+	}
+
+	if (!GameEndWidgetClass) return;
+
+	UGameEndWidget* EndWidget = CreateWidget<UGameEndWidget>(GetWorld(), GameEndWidgetClass);
+
+	if (bPlayerWon)
+	{
+		EndWidget->SetResultMessage(FText::FromString("You Won!"));
+	}
+
+	else
+	{
+		EndWidget->SetResultMessage(FText::FromString("You Lost!"));
+	}
+
+	EndWidget->AddToViewport();
+
+	PlayerOwner->bShowMouseCursor = true;
+	PlayerOwner->SetInputMode(FInputModeUIOnly());
 }
 
 void AFPSGameHUD::DrawHUD()
@@ -32,8 +82,8 @@ void AFPSGameHUD::DrawHUD()
 	float CrosshairWidth = CrosshairTexture->GetSurfaceWidth();
 	float CrosshairHeight = CrosshairTexture->GetSurfaceHeight();
 
-	float AlignmentX = 0.5;
-	float AlignmentY = 0.5;
+	float AlignmentX = 1;
+	float AlignmentY = 1;
 	FVector2D CrosshairPosOffset(CrosshairWidth * AlignmentX, CrosshairHeight * AlignmentY);
 
 	// Draw/Render Settings
@@ -58,6 +108,8 @@ void AFPSGameHUD::SpawnGameMenuWidget()
 
 	GameMenuWidgetContainer = CreateWidget<UGameMenuWidget>(GetWorld(), GameMenuWidgetClass);
 	GameMenuWidgetContainer->AddToViewport();
+
+	GameMenuWidgetContainer->UpdateTimer(StartingTime);
 
 	PlayerOwner->bShowMouseCursor = false;
 	PlayerOwner->SetInputMode(FInputModeGameOnly());

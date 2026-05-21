@@ -37,9 +37,21 @@ public:
 	TSubclassOf<class UGameMenuWidget> GameMenuWidgetClass;
 	UGameMenuWidget* GameMenuWidgetContainer;
 
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<class UGameEndWidget> GameEndWidgetClass;
+
+	UPROPERTY(EditAnywhere, Category = "Gameplay")
+	int32 StartingTime = 60;
+
 	void SpawnGameMenuWidget();
-
-
 	void ShowSettingsWidget();
 	void HideSettingsWidget();
+	void ShowGameEndScreen(bool bPlayerWon);
+
+private:
+	int32 TimeRemaining;
+
+	FTimerHandle CountdownTimerHandle;
+
+	void CountdownTick();
 };

@@ -10,7 +10,6 @@ void UGameMenuWidget::NativeConstruct()
 
 	UpdatePatienceBar(1.0f);
 	UpdateScore(0);
-	UpdateTimer(60);
 }
 
 void UGameMenuWidget::UpdatePatienceBar(float PatiencePercent)
@@ -45,5 +44,5 @@ void UGameMenuWidget::UpdateTimer(int Time)
 
 void UGameMenuWidget::OnPauseClicked()
 {
-
+	//Leaving empty for now in case I decide to add a pause later
 }	
